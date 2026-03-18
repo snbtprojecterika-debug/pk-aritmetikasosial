@@ -7,50 +7,36 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 20px; color: #333; margin: 0; }
         .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        /* TIMER STYLES - Ini yang akan muncul di atas */
-        #timerContainer { 
-            position: sticky; top: 0; background: #e74c3c; color: white; 
-            padding: 15px; text-align: center; font-size: 22px; font-weight: bold;
-            z-index: 1000; border-radius: 0 0 10px 10px; margin: -20px -20px 20px -20px;
-        }
-
+        #timerContainer { position: sticky; top: 0; background: #e74c3c; color: white; padding: 15px; text-align: center; font-size: 22px; font-weight: bold; z-index: 1000; border-radius: 0 0 10px 10px; margin: -20px -20px 20px -20px; }
         .card { border: 1.5px solid #a2d9db; border-radius: 10px; margin-bottom: 20px; padding: 15px; }
         .btn { width: 100%; padding: 15px; background: #008489; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
         #quizSection, #resultSection { display: none; }
         .option { display: block; padding: 12px; border: 1px solid #eee; margin-top: 8px; border-radius: 8px; cursor: pointer; }
         .option:hover { background: #f0fafa; border-color: #008489; }
-        .score-number { font-size: 72px; font-weight: bold; text-align: center; color: #008489; }
+        .score-number { font-size: 72px; font-weight: bold; text-align: center; color: #008489; margin: 20px 0; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div id="landingSection">
         <h1 style="text-align: center; color: #008489;">Latihan SNBT PK</h1>
-        <div class="card">
-            <b>INFO KUIS:</b>
-            <ul>
-                <li>Jumlah Soal: 20 Butir [cite: 2]</li>
-                <li>Waktu: 20 Menit (1 menit/soal)</li>
-                <li>Topik: Aritmetika Sosial [cite: 1]</li>
-            </ul>
-        </div>
-        <input type="text" id="userName" style="width:95%; padding:12px; margin-bottom: 20px;" placeholder="Nama Lengkap...">
+        <div class="card"><b>INFO KUIS:</b><ul><li>20 Soal Aritmetika Sosial [cite: 1, 2]</li><li>Waktu: 20 Menit (1 menit/soal)</li></ul></div>
+        <input type="text" id="userName" style="width:95%; padding:12px; margin-bottom: 20px;" placeholder="Nama Lengkap Anda...">
         <button class="btn" onclick="mulaiKuis()">MULAI KERJAKAN</button>
     </div>
 
     <div id="quizSection">
         <div id="timerContainer">⏳ Sisa Waktu: <span id="time">20:00</span></div>
         <div id="isiSoal"></div>
-        <button class="btn" onclick="hitungHasil(true)">SELESAI & KIRIM</button>
+        <button class="btn" onclick="hitungDanKirim(true)">SELESAI & KIRIM</button>
     </div>
 
     <div id="resultSection">
-        <h2 style="text-align: center;">Hasil Anda</h2>
+        <h2 style="text-align: center;">Hasil Latihan</h2>
         <div class="score-number" id="displaySkor">0</div>
-        <div id="statusKirim" style="text-align: center; font-style: italic;">Mengirim ke Sheets...</div>
-        <button class="btn" style="background: #666; margin-top: 20px;" onclick="location.reload()">ULANGI</button>
+        <p id="resNama" style="text-align: center; font-weight: bold;"></p>
+        <div id="statusKirim" style="text-align: center; font-style: italic; color: orange;">Sedang mengirim ke Google Sheets...</div>
+        <button class="btn" style="background: #666; margin-top: 20px;" onclick="location.reload()">COBA LAGI</button>
     </div>
 </div>
 
@@ -58,69 +44,78 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyp__inTjrlkNDRAooB6bU1AiRZh64Xr3cDrLMY9hBqwpKLaGAx5U103HAH4uPlMtWE/exec';
 
     const soalData = [
-        { q: "Pedagang beli sepeda Rp1,2jt, jual Rp1,5jt. % Untung?", a: ["15%", "20%", "25%", "30%", "35%"], k: 2 },
-        { q: "Jual HP Rp1,8jt rugi 10%. Harga beli awal?", a: ["Rp1,98jt", "Rp2jt", "Rp2,1jt", "Rp2,2jt", "Rp2,3jt"], k: 1 },
-        { q: "Diskon 20%, label Rp200rb, untung 25%. Modal?", a: ["Rp120rb", "Rp125rb", "Rp128rb", "Rp150rb", "Rp160rb"], k: 2 },
-        { q: "Beli 2 lusin Rp96rb. Untung 20%, jual per buku?", a: ["Rp4.000", "Rp4.500", "Rp4.800", "Rp5.000", "Rp5.200"], k: 2 },
-        { q: "Campur 3kg A (10rb) & 2kg B (15rb). Jual 13.200/kg. % Untung?", a: ["8%", "10%", "12%", "15%", "18%"], k: 1 },
-        { q: "Jual 2 barang @1,2jt. B1 untung 20%, B2 rugi 20%. Hasil?", a: ["Impas", "Rugi 100rb", "Untung 100rb", "Rugi 50rb", "Untung 50rb"], k: 1 },
-        { q: "Untung setara beli 20 barang pada jual 100 barang. % Untung?", a: ["15%", "20%", "25%", "30%", "35%"], k: 1 },
-        { q: "Timbangan rusak: 1kg terbaca 800g. Jual harga beli, % untung?", a: ["20%", "25%", "30%", "15%", "10%"], k: 1 },
-        { q: "A ke B untung 10%, B ke C untung 20%. C bayar 132rb. A?", a: ["90rb", "100rb", "110rb", "120rb", "125rb"], k: 1 },
-        { q: "Beli 60% harga jual. Beli 4 Gratis 1. % Untung?", a: ["25%", "30%", "33,33%", "40%", "45%"], k: 2 },
-        { q: "Jual rumah untung 15%. Selisih jual-beli 45jt. Harga jual?", a: ["300jt", "330jt", "345jt", "360jt", "375jt"], k: 2 },
-        { q: "Beli 100 telur @2000. 20 pecah. Untung 20% modal, jual per butir sisa?", a: ["2.500", "2.800", "3.000", "3.200", "3.500"], k: 2 },
-        { q: "Selisih jual untung 10% & rugi 10% adalah 60rb. Harga beli?", a: ["200rb", "250rb", "300rb", "350rb", "400rb"], k: 2 },
-        { q: "Modal tas 250rb. Ingin diskon 20% & untung 20%. Label?", a: ["350rb", "375rb", "400rb", "425rb", "450rb"], k: 1 },
-        { q: "50 kemeja: 30 untung 20%, 20 rugi 10%. % Hasil total?", a: ["Untung 5%", "Untung 8%", "Untung 10%", "Impas", "Rugi 2%"], k: 1 },
-        { q: "Omset 10jt, Ops 3jt, Bahan 5jt. % Untung dari modal bahan?", a: ["20%", "30%", "40%", "50%", "60%"], k: 2 },
-        { q: "Untung 5rb/sisir. Margin 25% dari beli. Harga jual?", a: ["20rb", "22,5rb", "25rb", "30rb", "35rb"], k: 2 },
-        { q: "X & Y total 800rb. X rugi 15%, Y untung 20%. Impas. Beli Y?", a: ["300rb", "342.857", "400rb", "450rb", "500rb"], k: 1 },
-        { q: "2 jam jual @600rb. J1 untung 25% jual, J2 untung 25% beli. Selisih beli?", a: ["15rb", "30rb", "45rb", "60rb", "75rb"], k: 1 },
-        { q: "Harga beli naik 20%, harga jual naik 20%. % Untung?", a: ["Naik", "Turun", "Tetap", "Tak tentu", "Nol"], k: 2 }
+        { q: "Pedagang beli sepeda Rp1,2jt, jual Rp1,5jt. % Untung? [cite: 8, 9]", a: ["15%", "20%", "25%", "30%", "35%"], k: 2 },
+        { q: "Andi jual HP Rp1,8jt rugi 10%. Harga beli awal? [cite: 15]", a: ["Rp1,98jt", "Rp2jt", "Rp2,1jt", "Rp2,2jt", "Rp2,3jt"], k: 1 },
+        { q: "Diskon 20%, label Rp200rb, untung 25%. Modal? [cite: 21, 22]", a: ["Rp120rb", "Rp125rb", "Rp128rb", "Rp150rb", "Rp160rb"], k: 2 },
+        { q: "Pak Budi beli 2 lusin Rp96rb. Untung 20%, jual per buku? [cite: 29, 30]", a: ["Rp4.000", "Rp4.500", "Rp4.800", "Rp5.000", "Rp5.200"], k: 2 },
+        { q: "3kg A (10rb) & 2kg B (15rb). Jual 13.200/kg. % Untung? [cite: 36, 37]", a: ["8%", "10%", "12%", "15%", "18%"], k: 1 },
+        { q: "Jual 2 barang @1,2jt. B1 untung 20%, B2 rugi 20%. Hasil? [cite: 43, 44]", a: ["Impas", "Rugi 100rb", "Untung 100rb", "Rugi 50rb", "Untung 50rb"], k: 1 },
+        { q: "Untung setara beli 20 barang pada jual 100 barang. % Untung? [cite: 50, 51]", a: ["15%", "20%", "25%", "30%", "35%"], k: 1 },
+        { q: "Timbangan rusak: 1kg terbaca 800g. Jual harga beli, % untung? [cite: 57, 58]", a: ["20%", "25%", "30%", "15%", "10%"], k: 1 },
+        { q: "A ke B untung 10%, B ke C untung 20%. C bayar 132rb. A? [cite: 64, 65]", a: ["90rb", "100rb", "110rb", "120rb", "125rb"], k: 1 },
+        { q: "Beli 60% harga jual. Beli 4 Gratis 1. % Untung? [cite: 72, 73]", a: ["25%", "30%", "33,33%", "40%", "45%"], k: 2 },
+        { q: "Jual rumah untung 15%. Selisih jual-beli 45jt. Harga jual? [cite: 79]", a: ["300jt", "330jt", "345jt", "360jt", "375jt"], k: 2 },
+        { q: "Beli 100 telur @2000. 20 pecah. Untung 20% modal, jual per sisa? [cite: 85, 86]", a: ["2.500", "2.800", "3.000", "3.200", "3.500"], k: 2 },
+        { q: "Selisih jual untung 10% & rugi 10% adalah 60rb. Harga beli? [cite: 92, 93]", a: ["200rb", "250rb", "300rb", "350rb", "400rb"], k: 2 },
+        { q: "Modal tas 250rb. Ingin diskon 20% & untung 20%. Label? [cite: 99]", a: ["350rb", "375rb", "400rb", "425rb", "450rb"], k: 1 },
+        { q: "50 kemeja: 30 untung 20%, 20 rugi 10%. % Total? [cite: 106, 107]", a: ["Untung 5%", "Untung 8%", "Untung 10%", "Impas", "Rugi 2%"], k: 1 },
+        { q: "Omset 10jt, Ops 3jt, Bahan 5jt. % Untung dari bahan? [cite: 113]", a: ["20%", "30%", "40%", "50%", "60%"], k: 2 },
+        { q: "Untung 5rb/sisir. Margin 25% dari beli. Harga jual? [cite: 119]", a: ["20rb", "22,5rb", "25rb", "30rb", "35rb"], k: 2 },
+        { q: "X & Y total 800rb. X rugi 15%, Y untung 20%. Impas. Beli Y? [cite: 125, 126]", a: ["300rb", "342.857", "400rb", "450rb", "500rb"], k: 1 },
+        { q: "2 jam @600rb. J1 untung 25% jual, J2 untung 25% beli. Selisih beli? [cite: 132, 133]", a: ["15rb", "30rb", "45rb", "60rb", "75rb"], k: 1 },
+        { q: "Harga beli naik 20%, harga jual naik 20%. % Untung? [cite: 139]", a: ["Naik", "Turun", "Tetap", "Tak tentu", "Nol"], k: 2 }
     ];
 
     let timer;
 
     function mulaiKuis() {
-        if (!document.getElementById('userName').value.trim()) return alert("Nama wajib diisi!");
+        const nama = document.getElementById('userName').value.trim();
+        if (!nama) return alert("Isi nama dulu!");
         document.getElementById('landingSection').style.display = 'none';
         document.getElementById('quizSection').style.display = 'block';
-
         let html = "";
         soalData.forEach((s, i) => {
             html += `<div class='card'><b>${i+1}. ${s.q}</b>`;
-            s.a.forEach((opt, idx) => {
-                html += `<label class='option'><input type='radio' name='q${i}' value='${idx}'> ${opt}</label>`;
-            });
+            s.a.forEach((opt, idx) => { html += `<label class='option'><input type='radio' name='q${i}' value='${idx}'> ${opt}</label>`; });
             html += `</div>`;
         });
         document.getElementById('isiSoal').innerHTML = html;
-
-        let totalTime = soalData.length * 60; // 20 Menit
+        let timeL = 1200; // 20 Menit
         timer = setInterval(() => {
-            totalTime--;
-            let m = Math.floor(totalTime/60);
-            let s = totalTime%60;
+            timeL--;
+            let m = Math.floor(timeL/60), s = timeL%60;
             document.getElementById('time').innerText = `${m}:${s<10?'0'+s:s}`;
-            if (totalTime <= 0) { clearInterval(timer); hitungHasil(false); }
+            if (timeL <= 0) { clearInterval(timer); hitungDanKirim(false); }
         }, 1000);
     }
 
-    function hitungHasil(confirmSelesai) {
-        if (confirmSelesai && !confirm("Kirim jawaban sekarang?")) return;
+    function hitungDanKirim(conf) {
+        if (conf && !confirm("Kirim sekarang?")) return;
         clearInterval(timer);
+        const nama = document.getElementById('userName').value;
         let benar = 0;
         soalData.forEach((s, i) => {
-            let rbs = document.getElementsByName('q'+i);
-            for(let r of rbs) if(r.checked && parseInt(r.value) === s.k) benar++;
+            const rb = document.querySelector(`input[name="q${i}"]:checked`);
+            if (rb && parseInt(rb.value) === s.k) benar++;
         });
-        let skor = (benar/soalData.length)*100;
+        const skor = (benar/soalData.length)*100;
         document.getElementById('displaySkor').innerText = skor.toFixed(1);
+        document.getElementById('resNama').innerText = nama;
         document.getElementById('quizSection').style.display = 'none';
         document.getElementById('resultSection').style.display = 'block';
 
-        fetch(scriptURL, { method: 'POST', body: new FormData() }); // Kirim data kosong dulu utk tes koneksi
+        const data = new URLSearchParams();
+        data.append('nama', nama);
+        data.append('skor', skor.toFixed(1));
+
+        fetch(scriptURL, { method: 'POST', body: data, mode: 'no-cors' })
+        .then(() => {
+            document.getElementById('statusKirim').innerText = "Data BERHASIL terkirim!";
+            document.getElementById('statusKirim').style.color = "green";
+        }).catch(() => {
+            document.getElementById('statusKirim').innerText = "Gagal kirim data.";
+            document.getElementById('statusKirim').style.color = "red";
+        });
     }
 </script>
 </body>
