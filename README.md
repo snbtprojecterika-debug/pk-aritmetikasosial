@@ -1,1 +1,1 @@
-# pk-aritmetikasosial
+# pk-aritmatikasosial
